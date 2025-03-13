@@ -33,7 +33,7 @@ module.exports.loginController = async (req, res) => {
     })
     return
   }
-  if (account.role != "customer"){
+  if (account.role != "manager"){
     res.json({
       code: "Role không tồn tại"
     })
@@ -49,6 +49,7 @@ module.exports.loginController = async (req, res) => {
   {
     accountToken: {
       "id": account.id,
+      "userID": account.userID,
       "email": account.email,
       "role": account.role,
       "key": md5(userAgent)
@@ -66,3 +67,35 @@ module.exports.loginController = async (req, res) => {
     rftoken: rftoken
   })
 }
+
+
+module.exports.addUserController = async (req, res) => {
+  try {
+      const { userID, name, phone_number, address, password, email, role } = req.body;
+      
+      const existingUser = await User.findOne({ $or: [{ email }, { userID }] });
+      if (existingUser) {
+          return res.status(400).json({ message: "UserID hoặc Email đã tồn tại." });
+      }
+
+      const hashedPassword = md5(password);
+
+      const newUser = new User({
+          userID,
+          name,
+          phone_number,
+          address,
+          password: hashedPassword,
+          email,
+          role
+      });
+
+      await newUser.save();
+
+      res.status(201).json({ message: "User đã được tạo thành công!", user: newUser });
+  } catch (error) {
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+};
+
+

@@ -1,5 +1,5 @@
 const md5 = require("md5");
-const Account = require("../../model/Account")
+// const Account = require("../../model/Account")
 const jwt = require("jsonwebtoken")
 require('dotenv').config();
 const secret = process.env.JWT_SECRET

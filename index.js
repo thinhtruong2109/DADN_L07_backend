@@ -2,11 +2,13 @@ require('dotenv').config()
 const cors = require('cors');
 const database = require ("./config/database")
 const express = require("express");
-// const routeManager = require("./routes/manager/index_route");
-const routeClient = require("./routes/client/index_route")
+
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser');
 const app = express()
+
+const routeManager = require("./routes/manager/index_route");
+const routeClient = require("./routes/client/index_route")
 
 const port = process.env.PORT;
 
@@ -27,7 +29,7 @@ app.use(bodyParser.urlencoded({
 
 
 routeClient(app)
-// routeManager(app)
+routeManager(app)
 
 
 app.listen(port, () => {

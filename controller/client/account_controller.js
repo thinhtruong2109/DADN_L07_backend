@@ -49,6 +49,7 @@ module.exports.loginController = async (req, res) => {
   {
     accountToken: {
       "id": account.id,
+      "userID": account.userID,
       "email": account.email,
       "role": account.role,
       "key": md5(userAgent)
