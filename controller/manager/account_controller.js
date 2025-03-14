@@ -99,3 +99,55 @@ module.exports.addUserController = async (req, res) => {
 };
 
 
+
+module.exports.getAllUserController = async (req, res) => {
+  try {
+      const users = await User.find().select("-password");
+      
+      res.json({ code: "success", msg: "Lấy danh sách Users thành công", users });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ code: "error", msg: "Đã xảy ra lỗi khi lấy danh sách người dùng" });
+  }
+};
+
+
+
+module.exports.getUserByIDController = async (req, res) => {
+  try {
+      const user = await User.find({
+        userID: req.query.userID
+      }).sort({
+        updatedAt: 1,
+      });
+  
+      res.json({
+        code: "success",
+        msg: "Lấy User thành công",
+        user,
+      });
+    } catch (error) {
+      res.status(500).json({
+        code: "error",
+        msg: "Đã xảy ra lỗi khi lấy thông tin người dùng",
+      });
+    }    
+}
+
+
+module.exports.deleteUserController = async (req, res) => {
+  try {
+      const { userID } = req.query; 
+
+      const user = await User.findOneAndDelete({ userID });
+      if (!user) {
+          return res.status(404).json({ code: "error", msg: "User không tồn tại" });
+      }
+
+      res.json({ code: "success", msg: "User đã được xóa thành công", user });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ code: "error", msg: "Đã xảy ra lỗi khi xóa user" });
+  }
+};
+

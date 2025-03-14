@@ -4,4 +4,7 @@ const controller = require("../../controller/manager/account_controller")
 const middlewareAuth = require("../../middlewares/manager/auth")
 router.post("/login", controller.loginController)
 router.post("/addUser", middlewareAuth.requireAuth, controller.addUserController)
+router.get("/getAllUser", middlewareAuth.requireAuth, controller.getAllUserController)
+router.get("/getUserByID", middlewareAuth.requireAuth, controller.getUserByIDController)
+router.delete("/deleteUser", middlewareAuth.requireAuth, controller.deleteUserController)
 module.exports = router
