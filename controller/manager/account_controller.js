@@ -71,34 +71,51 @@ module.exports.loginController = async (req, res) => {
 
 module.exports.addUserController = async (req, res) => {
   try {
-      const { userID, name, phone_number, address, password, email, role } = req.body;
-      
-      const existingUser = await User.findOne({ $or: [{ email }, { userID }] });
-      if (existingUser) {
-          return res.status(400).json({ message: "UserID hoặc Email đã tồn tại." });
-      }
+    const { name, phone_number, address, password, email, role } = req.body;
+    
+    const lastUserResult = await User.aggregate([
+      {
+        $project: {
+          numericID: { $toInt: { $substr: ["$userID", 1, 10] } }
+        }
+      },
+      { $sort: { numericID: -1 } },
+      { $limit: 1 }
+    ]);
 
-      const hashedPassword = md5(password);
+    let newNumber = 1; 
+    if (lastUserResult.length > 0) {
+      newNumber = lastUserResult[0].numericID + 1;
+    }
+    
 
-      const newUser = new User({
-          userID,
-          name,
-          phone_number,
-          address,
-          password: hashedPassword,
-          email,
-          role
-      });
+    const newUserID = `U${newNumber.toString().padStart(10, '0')}`;
+    
 
-      await newUser.save();
-
-      res.status(201).json({ message: "User đã được tạo thành công!", user: newUser });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email đã tồn tại." });
+    }
+    
+    const hashedPassword = md5(password);
+    
+    const newUser = new User({
+      userID: newUserID,
+      name,
+      phone_number,
+      address,
+      password: hashedPassword,
+      email,
+      role
+    });
+    
+    await newUser.save();
+    
+    res.status(201).json({ message: "User đã được tạo thành công!", user: newUser });
   } catch (error) {
-      res.status(500).json({ message: "Lỗi server", error: error.message });
+    res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
-
-
 
 module.exports.getAllUserController = async (req, res) => {
   try {
@@ -110,7 +127,6 @@ module.exports.getAllUserController = async (req, res) => {
       res.status(500).json({ code: "error", msg: "Đã xảy ra lỗi khi lấy danh sách người dùng" });
   }
 };
-
 
 
 module.exports.getUserByIDController = async (req, res) => {
