@@ -5,8 +5,8 @@ module.exports.addDeviceController = async (req, res) => {
     try {
         const {name, type, status, location, last_updated } = req.body;
         
-        if (!name || !type) {
-            return res.status(400).json({ message: "name và type là bắt buộc." });
+        if (!name || !type || !status || !location) {
+            return res.status(400).json({ message: "name, type, status, location là bắt buộc." });
         }
 
 
