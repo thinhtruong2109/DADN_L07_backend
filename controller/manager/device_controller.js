@@ -3,22 +3,34 @@ const Device = require('../../model/Device');
 
 module.exports.addDeviceController = async (req, res) => {
     try {
-        const { deviceID, userID, name, type, status, location, last_updated } = req.body;
+        const { userID, name, type, status, location, last_updated } = req.body;
+        
+        if (!userID || !name || !type) {
+            return res.status(400).json({ message: "userID, name và type là bắt buộc." });
+        }
         
 
-        if (!deviceID || !userID || !name || !type) {
-            return res.status(400).json({ message: "deviceID, userID, name và type là bắt buộc." });
+        const lastDeviceResult = await Device.aggregate([
+            {
+                $project: {
+                    numericID: { $toInt: { $substr: ["$deviceID", 1, 10] } }
+                }
+            },
+            { $sort: { numericID: -1 } },
+            { $limit: 1 }
+        ]);
+        
+        let newNumber = 1; 
+        if (lastDeviceResult.length > 0) {
+            newNumber = lastDeviceResult[0].numericID + 1;
         }
+        
 
-
-        const existingDevice = await Device.findOne({ deviceID });
-        if (existingDevice) {
-            return res.status(400).json({ message: "DeviceID đã tồn tại." });
-        }
-
+        const newDeviceID = `D${newNumber.toString().padStart(10, '0')}`;
+        
 
         const newDevice = new Device({
-            deviceID,
+            deviceID: newDeviceID,
             userID,
             name,
             type,
@@ -26,10 +38,9 @@ module.exports.addDeviceController = async (req, res) => {
             location,
             last_updated
         });
-
-
+        
         await newDevice.save();
-
+        
         res.status(201).json({ message: "Device đã được tạo thành công!", device: newDevice });
     } catch (error) {
         res.status(500).json({ message: "Lỗi server", error: error.message });
